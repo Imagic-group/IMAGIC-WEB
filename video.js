@@ -13,8 +13,10 @@ wss.on('connection', ((ws) => {
     console.log('Connection ended...');
   });
 
-  stdin.addListener("data", (input) => {
-    ws.send(input.toString());
-  });
 
+  stdin.addListener("data", (input) => {
+    //console.log(Buffer.from(input).toString('base64'));
+    ws.send(Buffer.from(input).toString('base64'));
+  });
 }));
+
