@@ -44,11 +44,10 @@ let buf = "";
 ws.onmessage = function (event) {
   //console.log(event.data);
   buf += event.data;
-  console.log(buf.length);
-  im = read_jpeg();
-  while (im != undefined) {
+  //console.log(buf.length);
+  var im = read_jpeg();
+  if (im != undefined) {
     draw2(im);
-    im = read_jpeg();
   }
 };
 
@@ -59,8 +58,7 @@ ws.onclose = function() {
 function read_jpeg() {
   var started = false;
   for (; beg + 1 < buf.length; beg++) {
-    if (buf[beg] == String.fromCharCode(255)[0] &&
-        buf[beg + 1] == String.fromCharCode(16 * 13 + 8)[0]) {
+    if (buf.charCodeAt(beg) * 256 + buf.charCodeAt(beg + 1) == 255 * 256 + (16 * 13 + 8)) {
       started = true;
       break;
     }
@@ -70,23 +68,24 @@ function read_jpeg() {
     return undefined;
   }
   
-  console.log('LoL');
-  var end = beg;
+  console.log('start of image found');
+  var end = beg + 1;
   var finished = false;
-  for (; end + 1 < lenght(buf); end++) {
-    if (buf[end] == String.fromCharCode(255)[0] &&
-        buf[end + 1] == String.fromCharCode(16 * 13 + 9)) {
+  for (; end + 1 < buf.length; end++) {
+    if (buf.charCodeAt(end) * 256 + buf.charCodeAt(end + 1) == 255 * 256 + (16 * 13 + 8)) {
       finished = true;
       break;
     }
   }
-  
+  end -= 2;
+
   if (!finished) {
     return undefined;
   }
+  console.log('end of image found');
 
-  let im = buf.substr(beg, end + 1);
-  buf = buf.substr(end + 2, buf.length - 1);
+  let im = buf.substr(beg, end + 2 - beg);
+  buf = buf.substr(end + 2, buf.length - end - 2);
   beg = 0;
   return im;
 }
